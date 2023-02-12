@@ -19,7 +19,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-                .anyRequest().authenticated();
-
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                // SE A PAGINA LOGIN TIVER SUCESSO DIRECIONA PARA A PAGINA ABAIXO
+                .defaultSuccessUrl("/", true)
+                // SE FALHAR O LOGIN
+                .failureUrl("/login-error").permitAll()
+                // QUANDO FIZER LOGOUT DIRECIONA PARA RAIZ
+                .and()
+                .logout()
+                .logoutSuccessUrl("/");
     }
 }
