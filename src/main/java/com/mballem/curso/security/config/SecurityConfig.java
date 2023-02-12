@@ -10,6 +10,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     // CONFIGURANDO SPRING NA VERSÃO ANTIGA
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeRequests()
+                //LIBERANDO PAGINA HOME
+                .antMatchers("/", "/home").permitAll()
+                //LIBERANDO RECURSOS DE APARENCIA
+                .antMatchers("/webjars/**", "/css/**", "/image/**","/js/**").permitAll()
+
+
+
+
+                .anyRequest().authenticated();
+
     }
 }
