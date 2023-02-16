@@ -49,7 +49,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // QUANDO FIZER LOGOUT DIRECIONA PARA RAIZ
                 .and()
                 .logout()
-                .logoutSuccessUrl("/");
+                .logoutSuccessUrl("/")
+                .and()
+                .exceptionHandling()
+                .accessDeniedPage("/acesso-negado");
     }
 
 
