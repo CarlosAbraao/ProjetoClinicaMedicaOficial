@@ -11,6 +11,7 @@ public class DemoSecurityApplication {
 		SpringApplication.run(DemoSecurityApplication.class, args);
 
 		System.out.println(new BCryptPasswordEncoder().encode("root"));
+		System.out.println(new BCryptPasswordEncoder().encode("1234"));
 
 
 
