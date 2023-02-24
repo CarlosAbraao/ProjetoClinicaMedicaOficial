@@ -5,6 +5,7 @@ import com.mballem.curso.security.domain.Perfil;
 import com.mballem.curso.security.domain.Usuario;
 import com.mballem.curso.security.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,18 +61,22 @@ private UsuarioService service;
 
         if (perfis.size() > 2 ||
 
-                perfis.contains(Arrays.asList(new Perfil(1L), new Perfil(3L))) ||
-                perfis.contains(Arrays.asList(new Perfil(2L), new Perfil(3L)))) {
+                perfis.containsAll(Arrays.asList(new Perfil(1L), new Perfil(3L))) ||
+                perfis.containsAll(Arrays.asList(new Perfil(2L), new Perfil(3L)))) {
 
             attr.addFlashAttribute("falha", "Paciente não pode ser Amin e/ou Médioco. ");
             attr.addFlashAttribute("usuario", usuario);
 
-        }   else{
-                  service.savarUsuario(usuario);
-                  attr.addFlashAttribute("sucesso", "Operação realizada com sucesso!");
+        }   else {
+            // CASO  HAJA DUPLICAÇÃO DE USUARIO MSTRA UMA EXCESSAO
+            try {
+                service.savarUsuario(usuario);
+                attr.addFlashAttribute("sucesso", "Operação realizada com sucesso!");
+            } catch (DataIntegrityViolationException ex){
+                attr.addFlashAttribute("falha", "Cadastro não realizado, email já existente.");
             }
 
-
+        }
         return "redirect:/u/novo/cadastro/usuario";
     }
 
