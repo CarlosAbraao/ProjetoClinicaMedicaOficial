@@ -1,6 +1,7 @@
 package com.mballem.curso.security.config;
 
 
+import com.mballem.curso.security.domain.PerfilTipo;
 import com.mballem.curso.security.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -11,6 +12,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+
+    // CONSTANTES QUE RECEBEM O VALOR DOS PERFIS
+
+    private  static final String ADMIN = PerfilTipo.ADMIN.getDesc();
+    private  static final String MEDICO = PerfilTipo.MEDICO.getDesc();
+    private  static final String PACIENTE = PerfilTipo.PACIENTE.getDesc();
 
     // CRIPTOGRAFANDO A SENHA DO USUARIO
     @Autowired
@@ -35,6 +43,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 //ACESSOS PRIVADOR MEDICOS
                 .antMatchers("/medicos/**").hasAuthority("MEDICOS")
+
+
+                //ACESSOS PRIVADOS ESPCILIDADES
+                .antMatchers("/especialidades/**").hasAuthority("ADMIN")
+
+                //ACESSOS PRIVADOR PACIENTE
+                .antMatchers("/pacientes/**").hasAuthority("PACIENTE")
 
 
 
