@@ -84,6 +84,7 @@ public class UsuarioService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public Usuario buscarPorIdPerfil(Long usuarioId, Long[] perfisId) {
-        return repository.findByIdAndPerfis(usuarioId, perfisId);
+        return repository.findByIdAndPerfis(usuarioId, perfisId)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario inexistente."));
     }
 }

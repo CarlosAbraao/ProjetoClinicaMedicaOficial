@@ -50,6 +50,8 @@ $(document).ready(function() {
 		]
 	});
 
+
+// ESPERAR POR UM CLICK NAS COLUNAS DADOS ESPECIAIS
 	$('#table-usuarios tbody').on('click', '[id*="dp_"]', function () {
 	        var data = table.row($(this).parents('tr')).data();
 	        var aux = new Array();
