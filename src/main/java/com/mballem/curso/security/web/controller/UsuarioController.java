@@ -1,9 +1,11 @@
 package com.mballem.curso.security.web.controller;
 
 
+import com.mballem.curso.security.domain.Medico;
 import com.mballem.curso.security.domain.Perfil;
 import com.mballem.curso.security.domain.PerfilTipo;
 import com.mballem.curso.security.domain.Usuario;
+import com.mballem.curso.security.service.MedicoService;
 import com.mballem.curso.security.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,109 +22,106 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.Response;
 import java.util.Arrays;
 import java.util.List;
-
 @Controller
 @RequestMapping("u")
 public class UsuarioController {
 
-@Autowired
-private UsuarioService service;
+    @Autowired
+    private UsuarioService service;
+    @Autowired
+    private MedicoService medicoService;
 
-    //ABRIR CADASTRO DE USUARIOS
-    // QUEM PODE CADASTRar uM USUARIO (MEDICO/ADMIN/PACIENTE)
-
+    // abrir cadastro de usuarios (medico/admin/paciente)
     @GetMapping("/novo/cadastro/usuario")
-    public String cadastroPorAdminParaAdminMedicoPaciente(Usuario usuario){
+    public String cadastroPorAdminParaAdminMedicoPaciente(Usuario usuario) {
+
         return "usuario/cadastro";
     }
 
-    //ABRIR LISTA DE USUARIOS DA DATATABLES
-
+    // abrir lista de usuarios
     @GetMapping("/lista")
-    public String listarUsuarios(Usuario usuario){
-
+    public String listarUsuarios() {
 
         return "usuario/lista";
     }
 
-
+    // listar usuarios na datatables
     @GetMapping("/datatables/server/usuarios")
-    public ResponseEntity<?> listarUsuariosDataTables(HttpServletRequest request){
+    public ResponseEntity<?> listarUsuariosDatatables(HttpServletRequest request) {
 
         return ResponseEntity.ok(service.buscarTodos(request));
-
-
     }
 
-
-    // SALVAR UM CADASTRO DE USUARIO
-
+    // salvar cadastro de usuarios por administrador
     @PostMapping("/cadastro/salvar")
-    public String salvarUsuarios(Usuario usuario, RedirectAttributes attr){
-
+    public String salvarUsuarios(Usuario usuario, RedirectAttributes attr) {
         List<Perfil> perfis = usuario.getPerfis();
-
         if (perfis.size() > 2 ||
-
                 perfis.containsAll(Arrays.asList(new Perfil(1L), new Perfil(3L))) ||
                 perfis.containsAll(Arrays.asList(new Perfil(2L), new Perfil(3L)))) {
-
-            attr.addFlashAttribute("falha", "Paciente não pode ser Amin e/ou Médioco. ");
+            attr.addFlashAttribute("falha", "Paciente não pode ser Admin e/ou Médico.");
             attr.addFlashAttribute("usuario", usuario);
-
-        }   else {
-            // CASO  HAJA DUPLICAÇÃO DE USUARIO MSTRA UMA EXCESSAO
+        } else {
             try {
-                service.savarUsuario(usuario);
+                service.salvarUsuario(usuario);
                 attr.addFlashAttribute("sucesso", "Operação realizada com sucesso!");
-            } catch (DataIntegrityViolationException ex){
+            } catch (DataIntegrityViolationException ex) {
                 attr.addFlashAttribute("falha", "Cadastro não realizado, email já existente.");
             }
-
         }
         return "redirect:/u/novo/cadastro/usuario";
     }
 
-    // PRA EDICAO DAS CREDENCIAIS DO USUARIO
-
+    // pre edicao de credenciais de usuarios
     @GetMapping("/editar/credenciais/usuario/{id}")
-    public ModelAndView listarUsuariosDataTables(@PathVariable ("id") Long id){
+    public ModelAndView preEditarCredenciais(@PathVariable("id") Long id) {
 
-        return new ModelAndView("usuario/cadastro", "usuario" ,service.buscarPorId(id));
-
-
+        return new ModelAndView("usuario/cadastro", "usuario", service.buscarPorId(id));
     }
 
-
-    // PRE EDIÇÃO DE CADASTRP DE USUARIO
+    // pre edicao de cadastro de usuarios
     @GetMapping("/editar/dados/usuario/{id}/perfis/{perfis}")
-    public ModelAndView preEditarCadastroDadosPessoais(@PathVariable ("id") Long usuarioId, @PathVariable("perfis") Long[] perfisId){
+    public ModelAndView preEditarCadastroDadosPessoais(@PathVariable("id") Long usuarioId,
+                                                       @PathVariable("perfis") Long[] perfisId) {
+        Usuario us = service.buscarPorIdEPerfis(usuarioId, perfisId);
 
-        //REGRAS
-            Usuario us = service.buscarPorIdPerfil(usuarioId, perfisId);
+        if (us.getPerfis().contains(new Perfil(PerfilTipo.ADMIN.getCod())) &&
+                !us.getPerfis().contains(new Perfil(PerfilTipo.MEDICO.getCod())) ) {
 
+            return new ModelAndView("usuario/cadastro", "usuario", us);
+        } else if (us.getPerfis().contains(new Perfil(PerfilTipo.MEDICO.getCod()))) {
 
-            // SE O USUARIO CONTER ADMIN E NÃO MEDICO ELE ABRE A PAGINA DE CADASTRO
-            if(us.getPerfis().contains(new Perfil(PerfilTipo.ADMIN.getCod())) &&
+            Medico medico = medicoService.buscarPorUsuarioId(usuarioId);
+            return medico.hasNotId()
+                    ? new ModelAndView("medico/cadastro", "medico", new Medico(new Usuario(usuarioId)))
+                    : new ModelAndView("medico/cadastro", "medico", medico);
+        } else if (us.getPerfis().contains(new Perfil(PerfilTipo.PACIENTE.getCod()))) {
+            ModelAndView model = new ModelAndView("error");
+            model.addObject("status", 403);
+            model.addObject("error", "Área Restrita");
+            model.addObject("message", "Os dados de pacientes são restritos a ele.");
+            return model;
+        }
 
-            !us.getPerfis().contains(new Perfil(PerfilTipo.MEDICO.getCod())) ) {
-
-            return new ModelAndView( "usuario/cadastro", "usuario" ,us);
-        }else if(us.getPerfis().contains(new Perfil(PerfilTipo.MEDICO.getCod()))){
-
-                return new ModelAndView( "especialidade/especialidade");
-            }else if (us.getPerfis().contains(new Perfil(PerfilTipo.PACIENTE.getCod()))){
-
-                ModelAndView model = new ModelAndView("error");
-
-                model.addObject("status",403);
-                model.addObject("error","Área Restrita");
-                model.addObject("message","Os dados de pacientes são restritos a ele.");
-
-                return model;
-            }
-
-
-        return new ModelAndView( "redirect:/u/lista");
+        return new ModelAndView("redirect:/u/lista");
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
