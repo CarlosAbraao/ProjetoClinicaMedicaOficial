@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 @Controller
@@ -59,6 +60,24 @@ public class EspecialidadeController {
         service.remover(id);
         attr.addAttribute("sucesso","Operação realizada com sucesso.");
         return "redirect:/especialidades";
+
+    }
+
+
+    @GetMapping("/titulo")
+    public ResponseEntity<?> getEspecialidadesPorTermo(@RequestParam("termo") String termo){
+
+        List<String> especialidades = service.buscarEspecialidadesByTermo(termo);
+        return ResponseEntity.ok(especialidades);
+
+    }
+
+
+    @GetMapping("/datatables/server/medico/{id}")
+    public ResponseEntity<?> getEspecialidadesPorMedico(@PathVariable("id") Long id,HttpServletRequest request){
+
+
+        return ResponseEntity.ok(service.buscarEspecialidadePorMedico(id, request));
 
     }
 
