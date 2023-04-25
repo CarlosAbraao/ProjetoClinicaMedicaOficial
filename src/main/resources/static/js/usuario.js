@@ -65,5 +65,15 @@ $(document).ready(function() {
 	        document.location.href = '/u/editar/dados/usuario/' + data.id + '/perfis/' + aux;
 
 	});
-	
+
+	});
+
+	//QUANDO SOLTA A TECLA VAI EXECUTAR O CODIGO ABAIXO
+
+	$('.pass').keyup(function(){
+        $('#senha1').val() === $('#senha2').val()
+      ? $('#senha3').removeAttr('readonly')
+      : $('#senha3').attr('readonly', 'readonly');
+
+
 });	

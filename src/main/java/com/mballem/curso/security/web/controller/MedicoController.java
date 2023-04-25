@@ -74,7 +74,7 @@ public class MedicoController {
 
 // EXCLUIR MEDICO
     @GetMapping ({"/id/{idMed}/excluir/especializacao/{idEsp}"})
-    public String editar(@PathVariable("idMed") Long idMed,@PathVariable("idEsp") Long idEsp, RedirectAttributes attr){
+    public String excluirEspecialidadePorMedico(@PathVariable("idMed") Long idMed,@PathVariable("idEsp") Long idEsp, RedirectAttributes attr){
 
         service.excluirEspecialidadePorMedico(idMed, idEsp);
 
